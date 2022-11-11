@@ -66,6 +66,7 @@ const notifications = ref([]);
 
 const files = ref([]);
 const users = ref([]);
+const uploadToken = ref("");
 
 const uploadProgress = ref(0);
 const isUploadModalOpen = ref(false);
@@ -75,6 +76,7 @@ const clearData = () => {
   username.value = "";
   files.value = [];
   users.value = [];
+  uploadToken.value = "";
 };
 
 const registerSocketListeners = () => {
@@ -115,6 +117,7 @@ const registerSocketListeners = () => {
     users.value = data.users;
     files.value = data.files;
     roomId.value = data.id;
+    uploadToken.value = data.uploadToken;
   });
 
   socket.value.on(socketEvents.NEW_USER, (user) => {
@@ -199,18 +202,22 @@ const handleUploadFile = (file) => {
   const formData = new FormData();
   formData.append("file", file);
   axios
-    .post(`${getServerDomain()}/upload/${roomId.value}`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      onUploadProgress: (progressEvent) => {
-        const uploadPercentage = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        console.log("Upload Progress: " + uploadPercentage + "%");
-        uploadProgress.value = uploadPercentage;
-      },
-    })
+    .post(
+      `${getServerDomain()}/upload/${roomId.value}?token=${uploadToken.value}`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const uploadPercentage = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          console.log("Upload Progress: " + uploadPercentage + "%");
+          uploadProgress.value = uploadPercentage;
+        },
+      }
+    )
     .then((res) => {
       console.log(res);
       isUploadModalOpen.value = false;
