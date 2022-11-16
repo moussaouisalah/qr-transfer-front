@@ -5,11 +5,12 @@
       <p>username: {{ username }}</p>
     </div>
     <div class="canvas-container">
-      <canvas id="qrcode-canvas"></canvas>
+      <canvas ref="qrcodeCanvas"></canvas>
     </div>
   </Container>
 </template>
 <script setup>
+import { ref, watchEffect } from 'vue'
 import QRCode from "qrcode";
 
 import Container from "./Container.vue";
@@ -25,17 +26,19 @@ const props = defineProps({
   },
 });
 
-// generate qrcode and show it in cavas
-const canvas = document.getElementById("qrcode-canvas");
-const url = `${window.location.origin}/${props.roomId}`;
-QRCode.toCanvas(canvas, url, function (error) {
-  if (error) console.error(error);
-  console.log("success!");
+const qrcodeCanvas = ref(null)
+
+watchEffect(() => {
+  if(!qrcodeCanvas.value || !props.roomId) return;
+  const url = `${window.location.origin}/${props.roomId}`;
+  QRCode.toCanvas(qrcodeCanvas.value, url, (error) => {
+    if (error) console.error(error);
+  });
 });
 </script>
 <style scoped>
 #qrcode-canvas {
-  max-width: 60px;
-  max-height: 60px;
+  max-width: 200px;
+  max-height: 200px;
 }
 </style>

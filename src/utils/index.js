@@ -14,7 +14,7 @@ export const socketEvents = {
   DISCONNECT: "disconnect",
   NEW_USER: "new-user",
   USER_DISCONNECTED: "user-disconnected",
-  FILE_UPLOADED: "file-uploaded",
+  FILE_UPLOAD: "file-upload",
   ROOM_DATA: "room-data",
   USERNAME_TAKEN: "username-taken",
 };

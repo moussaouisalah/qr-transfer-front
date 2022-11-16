@@ -18,12 +18,16 @@
       <div class="files-container">
         <FilesContainer :files="files" />
       </div>
+      <div>
+        <CoolButton text="upload" @click="isUploadModalOpen = true" />
+      </div>
       <div v-if="isUploadModalOpen" class="upload-file-modal">
         <UploadFileModal
           :progress="uploadProgress"
           :isLoading="loading.upload"
           :errors="{ file: errors.upload }"
           @upload="handleUploadFile"
+          @close="isUploadModalOpen = false"
         />
       </div>
     </div>
@@ -36,13 +40,16 @@
 import { ref, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { io } from "socket.io-client";
-import { getServerDomain, socketEvents } from "../utils";
+import axios from "axios";
+import { getServerUrl, getServerDomain, socketEvents } from "../utils";
 
 import ConnectModal from "../components/ConnectModal.vue";
 import RoomInfoContainer from "../components/RoomInfoContainer.vue";
 import UsersListContainer from "../components/UsersListContainer.vue";
 import FilesContainer from "../components/FilesContainer.vue";
 import NotificationsContainer from "../components/NotificationsContainer.vue";
+import CoolButton from "../components/CoolButton.vue";
+import UploadFileModal from "../components/UploadFileModal.vue";
 
 const route = useRoute();
 console.log(route.params.id);
@@ -131,7 +138,7 @@ const registerSocketListeners = () => {
   });
 
   socket.value.on(socketEvents.FILE_UPLOAD, (file) => {
-    console.log("file-upload", data);
+    console.log("file-upload", file);
     files.value = [...files.value, file];
   });
 
@@ -203,7 +210,7 @@ const handleUploadFile = (file) => {
   formData.append("file", file);
   axios
     .post(
-      `${getServerDomain()}/upload/${roomId.value}?token=${uploadToken.value}`,
+      `${getServerUrl()}/upload/${roomId.value}?token=${uploadToken.value}`,
       formData,
       {
         headers: {
@@ -232,3 +239,13 @@ const handleUploadFile = (file) => {
     });
 };
 </script>
+<style scoped>
+.upload-file-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+</style>
