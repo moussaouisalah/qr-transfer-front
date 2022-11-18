@@ -2,12 +2,12 @@
   <Container>
     <div class="title-container">
       <h2>Files List</h2>
-      <CoolButton text="Upload" />
+      <CoolButton text="Upload" @click="handleUploadClick" />
     </div>
     <div class="files-container">
-      <ul v-if="files.length > 0">
-        <li v-for="file in props.files" :key="file.path">
-          <a :href="file.path">Download</a>
+      <ul v-if="files.length > 0" class="files-container-list">
+        <li v-for="file in files" :key="file.path">
+          <FileContainer :file="file" />
         </li>
       </ul>
       <div v-else>
@@ -19,6 +19,7 @@
 <script setup>
 import Container from "./Container.vue";
 import CoolButton from "./CoolButton.vue";
+import FileContainer from "./FileContainer.vue";
 
 const props = defineProps({
   files: {
@@ -27,6 +28,12 @@ const props = defineProps({
     default: () => [],
   },
 });
+
+const emit = defineEmits(["showUploadModal"]);
+
+const handleUploadClick = () => {
+  emit("showUploadModal");
+};
 </script>
 <style scoped>
 .title-container {
@@ -37,5 +44,12 @@ const props = defineProps({
 
 .files-container {
   margin-top: 1rem;
+}
+
+.files-container-list {
+  list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 </style>

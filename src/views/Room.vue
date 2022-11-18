@@ -20,7 +20,10 @@
         <UsersListContainer :users="users" :currentUser="username" />
       </div>
       <div class="files-container">
-        <FilesContainer :files="files" />
+        <FilesContainer
+          :files="files"
+          @showUploadModal="handleToggleUploadModal"
+        />
       </div>
       <div v-if="isUploadModalOpen" class="upload-file-modal">
         <UploadFileModal
@@ -252,6 +255,10 @@ const handleUploadFile = (file) => {
       uploadProgress.value = 0;
     });
 };
+
+const handleToggleUploadModal = () => {
+  isUploadModalOpen.value = !isUploadModalOpen.value;
+};
 </script>
 <style scoped>
 .room-container {
@@ -262,8 +269,8 @@ const handleUploadFile = (file) => {
 
 .inside-room-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-areas: "info info users" "files files users";
+  grid-template-columns: 1fr;
+  grid-template-areas: "info" "files" "users";
   gap: 1rem;
 }
 
@@ -296,6 +303,13 @@ const handleUploadFile = (file) => {
   width: min(95%, 500px);
   padding: 1rem;
   z-index: 100;
+}
+
+@media (min-width: 500px) {
+  .inside-room-container {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas: "info users" "files files";
+  }
 }
 
 @media (min-width: 768px) {
