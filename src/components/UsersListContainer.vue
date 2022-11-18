@@ -1,12 +1,15 @@
 <template>
   <Container>
+    <div class="title">
+      <h2>Users List</h2>
+    </div>
     <div class="current-user-container">
-      <p>Current user: {{ currentUser }}</p>
+      <UserContainer :username="currentUser" :isCurrentUser="true" />
     </div>
     <div class="users-list-container">
-      <ul>
+      <ul class="other-users-list">
         <li v-for="user in otherUsers" :key="user">
-          {{ user }}
+          <UserContainer :username="user" />
         </li>
       </ul>
     </div>
@@ -16,6 +19,7 @@
 import { computed } from "vue";
 
 import Container from "./Container.vue";
+import UserContainer from "./UserContainer.vue";
 
 const props = defineProps({
   users: {
@@ -36,4 +40,19 @@ const otherUsers = computed(() =>
   props.users.filter((user) => !isCurrentUser(user))
 );
 </script>
-<style scoped></style>
+<style scoped>
+.current-user-container {
+  margin-top: 1rem;
+}
+
+.users-list-container {
+  margin-top: 1rem;
+}
+
+.other-users-list {
+  list-style-type: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+</style>

@@ -8,18 +8,19 @@
       @newRoom="handleNewRoom"
       @connectToRoom="handleConnect"
     />
-    <div v-else>
+    <div v-else class="inside-room-container">
       <div class="room-info-container">
-        <RoomInfoContainer :roomId="roomId" :username="username" />
+        <RoomInfoContainer
+          :roomId="roomId"
+          :username="username"
+          :roomUsersNumber="users.length"
+        />
       </div>
       <div class="users-container">
         <UsersListContainer :users="users" :currentUser="username" />
       </div>
       <div class="files-container">
         <FilesContainer :files="files" />
-      </div>
-      <div>
-        <CoolButton text="upload" @click="isUploadModalOpen = true" />
       </div>
       <div v-if="isUploadModalOpen" class="upload-file-modal">
         <UploadFileModal
@@ -37,7 +38,7 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { useRoute } from "vue-router";
 import { io } from "socket.io-client";
 import axios from "axios";
@@ -77,6 +78,19 @@ const uploadToken = ref("");
 
 const uploadProgress = ref(0);
 const isUploadModalOpen = ref(false);
+
+watch(
+  () => notifications.value,
+  (newValue, oldValue) => {
+    console.log("notifications changed", newValue, oldValue);
+    if (oldValue.length > newValue.length) return;
+    if (newValue.length > 0) {
+      setTimeout(() => {
+        newValue.shift();
+      }, 3000);
+    }
+  }
+);
 
 const clearData = () => {
   roomId.value = null;
@@ -128,12 +142,12 @@ const registerSocketListeners = () => {
   });
 
   socket.value.on(socketEvents.NEW_USER, (user) => {
-    console.log("new-user", data);
+    console.log("new-user", user);
     users.value = [...users.value, user];
   });
 
   socket.value.on(socketEvents.USER_DISCONNECTED, (user) => {
-    console.log("user-disconnected", data);
+    console.log("user-disconnected", user);
     users.value = users.value.filter((u) => u !== user);
   });
 
@@ -240,6 +254,31 @@ const handleUploadFile = (file) => {
 };
 </script>
 <style scoped>
+.room-container {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.inside-room-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas: "info info users" "files files users";
+  gap: 1rem;
+}
+
+.room-info-container {
+  grid-area: info;
+}
+
+.users-container {
+  grid-area: users;
+}
+
+.files-container {
+  grid-area: files;
+}
+
 .upload-file-modal {
   position: fixed;
   top: 0;
@@ -247,5 +286,22 @@ const handleUploadFile = (file) => {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
+.notifications-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(95%, 500px);
+  padding: 1rem;
+  z-index: 100;
+}
+
+@media (min-width: 768px) {
+  .inside-room-container {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: "info files files" "users files files";
+  }
 }
 </style>
