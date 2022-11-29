@@ -4,9 +4,10 @@
       v-if="!isConnected"
       :initialRoomId="roomId"
       :isLoading="loading.connect"
-      :errors="{ username: errors.username }"
+      :errors="{ username: errors.username, room: errors.room }"
       @newRoom="handleNewRoom"
       @connectToRoom="handleConnect"
+      class="connect-modal-container"
     />
     <div v-else class="inside-room-container">
       <div class="room-info-container">
@@ -43,7 +44,7 @@
 </template>
 <script setup>
 import { ref, reactive, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { io } from "socket.io-client";
 import axios from "axios";
 import { getServerUrl, getServerDomain, socketEvents } from "../utils";
@@ -57,6 +58,8 @@ import CoolButton from "../components/CoolButton.vue";
 import UploadFileModal from "../components/UploadFileModal.vue";
 
 const route = useRoute();
+const router = useRouter();
+
 console.log(route.params.id);
 
 const roomId = ref(route.params.id ?? "");
@@ -117,7 +120,7 @@ const registerSocketListeners = () => {
         message: `connected to room ${roomId.value}`,
       },
     ];
-    window.history.replaceState({}, "", `/${roomId.value}`);
+    router.replace({ name: route.name, params: { id: roomId.value } });
   });
 
   socket.value.on(socketEvents.DISCONNECT, () => {
@@ -135,7 +138,7 @@ const registerSocketListeners = () => {
     }
     isConnected.value = false;
     clearData();
-    window.history.pushState({}, "", "/");
+    router.replace({ path: "/" });
   });
 
   socket.value.on(socketEvents.ROOM_DATA, (data) => {
@@ -179,8 +182,13 @@ const handleConnect = ({ room, user }) => {
     errors.username = "Username is required";
     return;
   }
+  if (!room) {
+    errors.room = "Room is required";
+    return;
+  }
   console.log("connect", room, user);
   errors.username = "";
+  errors.room = "";
   username.value = user;
   loading.connect = true;
   socket.value = io(getServerDomain(), {
@@ -198,6 +206,7 @@ const handleNewRoom = ({ user }) => {
     return;
   }
   errors.username = "";
+  errors.room = "";
   username.value = user;
   loading.connect = true;
   socket.value = io(getServerDomain(), {
@@ -215,7 +224,7 @@ const handleDisconnect = () => {
   }
   isConnected.value = false;
   clearData();
-  window.history.pushState({}, "", "/");
+  router.replace({ path: "/" });
 };
 
 const handleUploadFile = (file) => {
@@ -277,6 +286,10 @@ const handleShared = () => {
   padding: 1rem;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.connect-modal-container {
+  max-width: 500px;
 }
 
 .inside-room-container {

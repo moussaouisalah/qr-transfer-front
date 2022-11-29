@@ -1,15 +1,17 @@
 <template>
-  <div>
+  <div class="connect-container">
     <CoolInput
       type="text"
       :value="username"
-      placeholder="username"
+      placeholder="ExampleUsername"
+      label="Username"
       @input="(e) => (username = e)"
     />
     <CoolInput
       type="text"
       :value="roomId"
-      placeholder="room id"
+      placeholder="xxxxx-xxxxx-xxxx"
+      label="Room Id"
       @input="(e) => (roomId = e)"
     />
     <CoolButton text="Connect" @click="handleConnect" />
@@ -42,3 +44,11 @@ const handleConnect = () => {
   emit("connect", { username: username.value, roomId: roomId.value });
 };
 </script>
+<style scoped>
+.connect-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+</style>
