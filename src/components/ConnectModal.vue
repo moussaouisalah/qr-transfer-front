@@ -60,7 +60,8 @@ const currentStep = ref(props.initialRoomId ? "connect" : "choose");
 const handleGoBack = () => {
   roomId.value = "";
   currentStep.value = "choose";
-  // TODO: remove path param
+  // remove path param
+  window.history.pushState({}, "", "/");
 };
 
 const handleConnectToRoom = ({ username, roomId }) => {

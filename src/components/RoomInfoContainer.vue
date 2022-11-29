@@ -4,14 +4,14 @@
       <canvas ref="qrcodeCanvas"></canvas>
     </div>
     <div class="room-info-text-container">
-      <CoolInput :value="roomId" label="Room" />
+      <CoolInput :value="roomUrl" label="Room" />
       <CoolInput :value="`${roomUsersNumber} Users`" label="Users" />
-      <CoolButton text="share" />
+      <CoolButton text="share" @click="handleShare" />
     </div>
   </Container>
 </template>
 <script setup>
-import { ref, watchEffect } from "vue";
+import { ref, computed, watchEffect } from "vue";
 import QRCode from "qrcode";
 
 import Container from "./Container.vue";
@@ -34,7 +34,13 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["share"]);
+
 const qrcodeCanvas = ref(null);
+
+const roomUrl = computed(() => {
+  return `${window.location.origin}/${props.roomId}`;
+});
 
 watchEffect(() => {
   if (!qrcodeCanvas.value || !props.roomId) return;
@@ -43,6 +49,11 @@ watchEffect(() => {
     if (error) console.error(error);
   });
 });
+
+const handleShare = () => {
+  navigator.clipboard.writeText(roomUrl.value);
+  emit("share");
+};
 </script>
 <style scoped>
 .room-info-container {

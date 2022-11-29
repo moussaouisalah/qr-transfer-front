@@ -14,6 +14,7 @@
           :roomId="roomId"
           :username="username"
           :roomUsersNumber="users.length"
+          @share="handleShared"
         />
       </div>
       <div class="users-container">
@@ -116,6 +117,7 @@ const registerSocketListeners = () => {
         message: `connected to room ${roomId.value}`,
       },
     ];
+    window.history.replaceState({}, "", `/${roomId.value}`);
   });
 
   socket.value.on(socketEvents.DISCONNECT, () => {
@@ -133,7 +135,7 @@ const registerSocketListeners = () => {
     }
     isConnected.value = false;
     clearData();
-    // TODO: go back to home page
+    window.history.pushState({}, "", "/");
   });
 
   socket.value.on(socketEvents.ROOM_DATA, (data) => {
@@ -213,7 +215,7 @@ const handleDisconnect = () => {
   }
   isConnected.value = false;
   clearData();
-  // TODO: go back to home page
+  window.history.pushState({}, "", "/");
 };
 
 const handleUploadFile = (file) => {
@@ -259,6 +261,16 @@ const handleUploadFile = (file) => {
 const handleToggleUploadModal = () => {
   isUploadModalOpen.value = !isUploadModalOpen.value;
 };
+
+const handleShared = () => {
+  notifications.value = [
+    ...notifications.value,
+    {
+      type: "info",
+      message: "Room link copied to clipboard",
+    },
+  ];
+};
 </script>
 <style scoped>
 .room-container {
@@ -294,6 +306,9 @@ const handleToggleUploadModal = () => {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .notifications-container {
