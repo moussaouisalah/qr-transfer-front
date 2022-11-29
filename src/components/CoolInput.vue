@@ -4,6 +4,7 @@
     <input
       v-bind="$attrs"
       :value="props.value"
+      :readonly="isReadOnly"
       @input="handleUpdate"
       class="cool-input"
     />
@@ -18,6 +19,10 @@ const props = defineProps({
   label: {
     type: String,
     default: "",
+  },
+  isReadOnly: {
+    type: Boolean,
+    default: false,
   },
 });
 

@@ -4,8 +4,8 @@
       <canvas ref="qrcodeCanvas"></canvas>
     </div>
     <div class="room-info-text-container">
-      <CoolInput :value="roomUrl" label="Room" />
-      <CoolInput :value="`${roomUsersNumber} Users`" label="Users" />
+      <CoolInput :value="roomUrl" label="Room" isReadOnly />
+      <CoolInput :value="`${roomUsersNumber} Users`" label="Users" isReadOnly />
       <CoolButton text="share" @click="handleShare" />
     </div>
   </Container>
