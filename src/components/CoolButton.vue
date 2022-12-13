@@ -3,6 +3,7 @@
     :disabled="props.isLoading"
     @click="handleClick"
     :style="{ '--background-color': props.backgroundColor }"
+    :class="{ loading: props.isLoading }"
   >
     {{ props.isLoading ? "Loading..." : props.text }}
   </button>
@@ -47,5 +48,9 @@ button {
 button:hover {
   cursor: pointer;
   opacity: 0.8;
+}
+
+button.loading {
+  opacity: 0.5;
 }
 </style>

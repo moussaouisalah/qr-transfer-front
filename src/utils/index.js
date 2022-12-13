@@ -8,13 +8,3 @@ export const getServerDomain = () => {
 export const getServerUrl = () => {
   return `${SERVER_PROTOCOL}://${SERVER_DOMAIN}`;
 };
-
-export const socketEvents = {
-  CONNECT: "connect",
-  DISCONNECT: "disconnect",
-  NEW_USER: "new-user",
-  USER_DISCONNECTED: "user-disconnected",
-  FILE_UPLOAD: "file-upload",
-  ROOM_DATA: "room-data",
-  USERNAME_TAKEN: "username-taken",
-};

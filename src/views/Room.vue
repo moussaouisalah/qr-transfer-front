@@ -45,10 +45,11 @@
 <script setup>
 import { ref, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { io } from "socket.io-client";
+import { connect, io } from "socket.io-client";
 import axios from "axios";
 
-import { getServerUrl, getServerDomain, socketEvents } from "../utils";
+import { getServerUrl, getServerDomain } from "../utils";
+import { socketEvents } from "../constants";
 import useNotifications from "../composables/useNotifications";
 
 import ConnectModal from "../components/ConnectModal.vue";
@@ -122,6 +123,27 @@ const registerSocketListeners = () => {
     isConnected.value = false;
     clearData();
     router.replace({ path: "/" });
+  });
+
+  const MAX_CONNECT_TRIES = 3;
+  let connectErrorsCount = 0;
+  socket.value.on(socketEvents.CONNECT_ERROR, (err) => {
+    console.log("connect_error", err);
+    connectErrorsCount++;
+    if (connectErrorsCount >= MAX_CONNECT_TRIES) {
+      addNotification({
+        type: "error",
+        message: "Could not connect to server",
+      });
+      if (socket.value) {
+        socket.value.disconnect();
+        socket.value = null;
+      }
+      isConnected.value = false;
+      loading.connect = false;
+      clearData();
+      router.replace({ path: "/" });
+    }
   });
 
   socket.value.on(socketEvents.ROOM_DATA, (data) => {
