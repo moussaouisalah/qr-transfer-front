@@ -38,7 +38,7 @@
       </div>
     </div>
     <div class="notifications-container">
-      <NotificationsContainer :notifications="notifications" />
+      <NotificationsContainer />
     </div>
   </div>
 </template>
@@ -47,7 +47,9 @@ import { ref, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { io } from "socket.io-client";
 import axios from "axios";
+
 import { getServerUrl, getServerDomain, socketEvents } from "../utils";
+import useNotifications from "../composables/useNotifications";
 
 import ConnectModal from "../components/ConnectModal.vue";
 import RoomInfoContainer from "../components/RoomInfoContainer.vue";
@@ -77,7 +79,7 @@ const loading = reactive({
   upload: false,
 });
 
-const notifications = ref([]);
+const { addNotification } = useNotifications();
 
 const files = ref([]);
 const users = ref([]);
@@ -85,19 +87,6 @@ const uploadToken = ref("");
 
 const uploadProgress = ref(0);
 const isUploadModalOpen = ref(false);
-
-watch(
-  () => notifications.value,
-  (newValue, oldValue) => {
-    console.log("notifications changed", newValue, oldValue);
-    if (oldValue.length > newValue.length) return;
-    if (newValue.length > 0) {
-      setTimeout(() => {
-        newValue.shift();
-      }, 3000);
-    }
-  }
-);
 
 const clearData = () => {
   roomId.value = null;
@@ -113,25 +102,19 @@ const registerSocketListeners = () => {
     isConnected.value = true;
     loading.connect = false;
     console.log("connected");
-    notifications.value = [
-      ...notifications.value,
-      {
-        type: "info",
-        message: `connected to room ${roomId.value}`,
-      },
-    ];
+    addNotification({
+      type: "success",
+      message: `connected to room ${roomId.value}`,
+    });
     router.replace({ name: route.name, params: { id: roomId.value } });
   });
 
   socket.value.on(socketEvents.DISCONNECT, () => {
     console.log("disconnected by server");
-    notifications.value = [
-      ...notifications.value,
-      {
-        type: "error",
-        message: "Disconnected from server",
-      },
-    ];
+    addNotification({
+      type: "error",
+      message: "Disconnected from server",
+    });
     if (socket.value) {
       socket.value.disconnect();
       socket.value = null;
@@ -214,15 +197,10 @@ const handleNewRoom = ({ user }) => {
       username: user,
     },
   });
-
-  notifications.value = [
-    ...notifications.value,
-    {
-      type: "info",
-      message: "Creating new room... This might take a while",
-    },
-  ];
-
+  addNotification({
+    type: "info",
+    message: "Creating new room... This might take a while",
+  });
   registerSocketListeners();
 };
 
@@ -281,13 +259,10 @@ const handleToggleUploadModal = () => {
 };
 
 const handleShared = () => {
-  notifications.value = [
-    ...notifications.value,
-    {
-      type: "info",
-      message: "Room link copied to clipboard",
-    },
-  ];
+  addNotification({
+    type: "success",
+    message: "Room link copied to clipboard",
+  });
 };
 </script>
 <style scoped>

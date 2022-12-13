@@ -11,13 +11,10 @@
 </template>
 <script setup>
 import { computed } from "vue";
-const props = defineProps({
-  notifications: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-});
+
+import useNotifications from "../composables/useNotifications";
+
+const { notifications } = useNotifications();
 
 const typeClass = (notification) => {
   const typesClasses = {
