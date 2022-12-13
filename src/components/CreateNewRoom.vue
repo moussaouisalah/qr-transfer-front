@@ -7,7 +7,7 @@
       label="Username"
       @input="(e) => (username = e)"
     />
-    <CoolButton text="Create" @click="handleCreate" />
+    <CoolButton text="Create" :isLoading="isLoading" @click="handleCreate" />
   </div>
 </template>
 <script setup>

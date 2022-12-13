@@ -1,12 +1,15 @@
 <template>
   <button
+    :disabled="props.isLoading"
     @click="handleClick"
     :style="{ '--background-color': props.backgroundColor }"
   >
-    {{ props.text }}
+    {{ props.isLoading ? "Loading..." : props.text }}
   </button>
 </template>
 <script setup>
+import LoadingSpinner from "./LoadingSpinner.vue";
+
 const emit = defineEmits(["click"]);
 
 const props = defineProps({
@@ -17,6 +20,10 @@ const props = defineProps({
   backgroundColor: {
     type: String,
     default: "green",
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
   },
 });
 

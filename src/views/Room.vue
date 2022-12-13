@@ -214,6 +214,15 @@ const handleNewRoom = ({ user }) => {
       username: user,
     },
   });
+
+  notifications.value = [
+    ...notifications.value,
+    {
+      type: "info",
+      message: "Creating new room... This might take a while",
+    },
+  ];
+
   registerSocketListeners();
 };
 
