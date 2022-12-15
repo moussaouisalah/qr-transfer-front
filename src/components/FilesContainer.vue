@@ -1,25 +1,44 @@
 <template>
-  <Container>
-    <div class="title-container">
-      <h2>Files List</h2>
-      <CoolButton text="Upload" @click="handleUploadClick" />
-    </div>
+  <NCard title="Files List">
+    <template #header-extra>
+      <NButton secondary type="primary" @click="handleUploadClick"
+        >Upload</NButton
+      >
+    </template>
     <div class="files-container">
-      <ul v-if="files.length > 0" class="files-container-list">
-        <li v-for="file in files" :key="file.path">
-          <FileContainer :file="file" />
-        </li>
-      </ul>
-      <div v-else>
-        <p>There are no files yet. Upload some!</p>
-      </div>
+      <NList v-if="files.length > 0" hoverable clickable>
+        <NListItem
+          v-for="file in files"
+          :key="file.path"
+          @click="handleDownload(file.path)"
+        >
+          <NThing :title="file.name">
+            <template #description>
+              <NTag size="small" type="info">{{ file.uploader }}</NTag>
+            </template>
+          </NThing>
+        </NListItem>
+      </NList>
+      <NEmpty v-else description="No files uploaded yet">
+        <template #extra>
+          <NButton @click="handleUploadClick">Upload a file</NButton>
+        </template>
+      </NEmpty>
     </div>
-  </Container>
+  </NCard>
 </template>
 <script setup>
-import Container from "./Container.vue";
-import CoolButton from "./CoolButton.vue";
-import FileContainer from "./FileContainer.vue";
+import { getServerUrl } from "../utils";
+
+import {
+  NButton,
+  NCard,
+  NEmpty,
+  NList,
+  NListItem,
+  NTag,
+  NThing,
+} from "naive-ui";
 
 const props = defineProps({
   files: {
@@ -33,6 +52,10 @@ const emit = defineEmits(["showUploadModal"]);
 
 const handleUploadClick = () => {
   emit("showUploadModal");
+};
+
+const handleDownload = (path) => {
+  window.open(`${getServerUrl()}/${path}`, "_blank");
 };
 </script>
 <style scoped>

@@ -1,22 +1,36 @@
 <template>
-  <Container>
-    <div class="title">
-      <h2>Users List</h2>
-    </div>
-    <div class="current-user-container">
-      <UserContainer :username="currentUser" :isCurrentUser="true" />
-    </div>
-    <div class="users-list-container">
-      <ul class="other-users-list">
-        <li v-for="user in otherUsers" :key="user">
-          <UserContainer :username="user" />
-        </li>
-      </ul>
-    </div>
-  </Container>
+  <NCard title="Users">
+    <NList>
+      <NListItem v-for="user in users" :key="user">
+        <NThing>
+          <div class="flex items-center" style="gap: 8px">
+            <span style="font-weight: bold; font-size: 18px">{{ user }}</span>
+          </div>
+        </NThing>
+        <template v-if="isCurrentUser(user)" #suffix>
+          <div
+            class="flex items-center"
+            style="flex: 1; justify-content: space-between"
+          >
+            <NTag v-if="isCurrentUser(user)" size="small" type="info">You</NTag>
+          </div>
+        </template>
+      </NListItem>
+    </NList>
+  </NCard>
 </template>
 <script setup>
 import { computed } from "vue";
+
+import {
+  NCard,
+  NList,
+  NListItem,
+  NThing,
+  NTag,
+  NButton,
+  NText,
+} from "naive-ui";
 
 import Container from "./Container.vue";
 import UserContainer from "./UserContainer.vue";

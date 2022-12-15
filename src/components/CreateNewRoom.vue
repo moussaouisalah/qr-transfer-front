@@ -1,20 +1,22 @@
 <template>
-  <div class="create-container">
-    <CoolInput
-      type="text"
-      :value="username"
-      placeholder="ExampleUsername"
-      label="Username"
-      @input="(e) => (username = e)"
-    />
-    <CoolButton text="Create" :isLoading="isLoading" @click="handleCreate" />
-  </div>
+  <NForm>
+    <NFormItem label="Username">
+      <NInput
+        v-model:value="form.username"
+        placeholder="ExampleUsername"
+        :disabled="isLoading"
+      />
+    </NFormItem>
+    <div class="flex justify-center">
+      <NButton type="primary" :loading="isLoading" @click="handleCreate"
+        >Create</NButton
+      >
+    </div>
+  </NForm>
 </template>
 <script setup>
-import { ref } from "vue";
-
-import CoolInput from "./CoolInput.vue";
-import CoolButton from "./CoolButton.vue";
+import { reactive } from "vue";
+import { NButton, NForm, NFormItem, NInput } from "naive-ui";
 
 const props = defineProps({
   isLoading: {
@@ -25,10 +27,13 @@ const props = defineProps({
 
 const emit = defineEmits(["create"]);
 
-const username = ref("");
+const form = reactive({
+  username: "",
+});
 
 const handleCreate = () => {
-  emit("create", { username: username.value });
+  console.log("create", form, form.username);
+  emit("create", form);
 };
 </script>
 <style scoped>
@@ -36,6 +41,7 @@ const handleCreate = () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 8px;
 }
 </style>

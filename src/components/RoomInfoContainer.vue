@@ -1,22 +1,19 @@
 <template>
-  <Container class="room-info-container">
+  <NCard title="Room info" class="room-info-container">
     <div class="canvas-container">
       <canvas ref="qrcodeCanvas"></canvas>
     </div>
     <div class="room-info-text-container">
-      <CoolInput :value="roomUrl" label="Room" isReadOnly />
-      <CoolInput :value="`${roomUsersNumber} Users`" label="Users" isReadOnly />
-      <CoolButton text="share" @click="handleShare" />
+      <NInput :value="`${roomUsersNumber} Users`" label="Users" isReadOnly />
+      <NInput :value="roomUrl" label="Room" isReadOnly />
+      <NButton secondary type="primary" @click="handleShare">Copy Link</NButton>
     </div>
-  </Container>
+  </NCard>
 </template>
 <script setup>
 import { ref, computed, watchEffect } from "vue";
 import QRCode from "qrcode";
-
-import Container from "./Container.vue";
-import CoolInput from "./CoolInput.vue";
-import CoolButton from "./CoolButton.vue";
+import { NButton, NCard, NInput } from "naive-ui";
 
 const props = defineProps({
   roomId: {
@@ -58,6 +55,13 @@ const handleShare = () => {
 <style scoped>
 .room-info-container {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.canvas-container {
+  width: max-content;
+  margin: 0 auto;
 }
 
 #qrcode-canvas {
@@ -69,6 +73,7 @@ const handleShare = () => {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 1rem;
   width: 100%;
 }

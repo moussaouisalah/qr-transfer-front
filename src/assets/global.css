@@ -2,5 +2,24 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: monospace;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.items-center {
+  align-items: center;
 }

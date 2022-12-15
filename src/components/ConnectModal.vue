@@ -1,44 +1,30 @@
 <template>
-  <Container class="connect-modal-container">
-    <div class="back-container">
-      <BackButton v-if="currentStep !== 'choose'" @click="handleGoBack" />
-      <h2 v-if="currentStep === 'create'">Create a new room</h2>
-      <h2 v-if="currentStep === 'connect'">Join existing room</h2>
-    </div>
-    <div v-if="errors.username" class="errors-container">
-      <p>{{ errors.username }}</p>
-    </div>
-    <div class="connect-content-container">
-      <ConnectToRoom
-        v-if="currentStep === 'connect'"
-        :initialRoomId="roomId"
-        :isLoading="props.isLoading"
-        @connect="handleConnectToRoom"
-      />
-      <CreateNewRoom
-        v-else-if="currentStep === 'create'"
-        :isLoading="isLoading"
-        @create="handleCreateNewRoom"
-      />
-      <div v-else class="choose-connect-type">
-        <CoolButton text="Create new room" @click="currentStep = 'create'" />
-        <CoolButton
-          text="Connect to room"
-          backgroundColor="orange"
-          @click="currentStep = 'connect'"
+  <NCard title="Welcome to Qranfer!" class="connect-modal-container">
+    <NTabs
+      type="line"
+      animated
+      :defaultValue="props.initialRoomId ? 'join-room' : 'create-room'"
+    >
+      <NTabPane name="create-room" tab="Create Room">
+        <CreateNewRoom :isLoading="isLoading" @create="handleCreateNewRoom" />
+      </NTabPane>
+      <NTabPane name="join-room" tab="Join Room">
+        <ConnectToRoom
+          :initialRoomId="props.initialRoomId"
+          :isLoading="props.isLoading"
+          @connect="handleConnectToRoom"
         />
-      </div>
-    </div>
-  </Container>
+      </NTabPane>
+    </NTabs>
+  </NCard>
 </template>
 <script setup>
 import { ref } from "vue";
 
+import { NButton, NCard, NTabs, NTabPane } from "naive-ui";
+
 import ConnectToRoom from "./ConnectToRoom.vue";
 import CreateNewRoom from "./CreateNewRoom.vue";
-import CoolButton from "./CoolButton.vue";
-import Container from "./Container.vue";
-import BackButton from "./BackButton.vue";
 
 const props = defineProps({
   initialRoomId: {
@@ -56,16 +42,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["newRoom", "connectToRoom"]);
-
-const roomId = ref(props.initialRoomId);
-const currentStep = ref(props.initialRoomId ? "connect" : "choose");
-
-const handleGoBack = () => {
-  roomId.value = "";
-  currentStep.value = "choose";
-  // remove path param
-  window.history.pushState({}, "", "/");
-};
 
 const handleConnectToRoom = ({ username, roomId }) => {
   emit("connectToRoom", { room: roomId, user: username });

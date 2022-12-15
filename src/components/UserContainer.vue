@@ -1,10 +1,12 @@
 <template>
   <div class="user-container">
     <p>{{ username }}</p>
-    <p v-if="isCurrentUser" class="you">YOU</p>
+    <NTag v-if="isCurrentUser" type="info">You</NTag>
   </div>
 </template>
 <script setup>
+import { NTag } from "naive-ui";
+
 const props = defineProps({
   username: {
     type: String,
@@ -23,11 +25,5 @@ const props = defineProps({
   align-items: center;
   padding: 0.5rem;
   border: 1px solid #ccc;
-}
-
-.you {
-  color: #ff0000;
-  font-weight: bold;
-  font-size: 0.9rem;
 }
 </style>

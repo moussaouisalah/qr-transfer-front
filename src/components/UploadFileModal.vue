@@ -1,24 +1,41 @@
 <template>
-  <div class="modal-container">
-    <div class="title-container">
-      <h2>Upload a file</h2>
+  <NCard title="Upload a file" class="modal-container">
+    <div class="flex flex-col items-center">
+      <div class="upload-progress-container">
+        <p v-if="progress">progress: {{ progress }}%</p>
+      </div>
+      <NUpload multiple directory-dnd @change="handleFilesChange">
+        <NUploadDragger>
+          <div>
+            <NIcon size="48" :depth="3">
+              <ArchiveOutline />
+            </NIcon>
+          </div>
+          <NText style="font-size: 16px; margin-top: 12px">
+            Click or drag a file to this area to upload
+          </NText>
+          <NP depth="3" style="margin: 8px 0 0 0">
+            Strictly prohibit from uploading sensitive information. For example,
+            your bank card PIN or your credit card expiry date.
+          </NP>
+        </NUploadDragger>
+      </NUpload>
+      <NButton type="primary" @click="handleUpload">Upload</NButton>
     </div>
-    <div class="upload-progress-container">
-      <p v-if="progress">progress: {{ progress }}%</p>
-    </div>
-    <VueFileDrop @accept="handleFileSelection" class="dropzone" />
-    <div v-if="file" class="uploaded-file">
-      <div class="file-name">{{ file.name }}</div>
-      <div class="file-size">{{ file.size }} bytes</div>
-    </div>
-    <CoolButton text="Upload" @click="handleUpload" />
-  </div>
+  </NCard>
 </template>
 <script setup>
 import { ref } from "vue";
-import { VueFileDrop } from "vue-file-drop";
-
-import CoolButton from "./CoolButton.vue";
+import {
+  NButton,
+  NCard,
+  NUpload,
+  NUploadDragger,
+  NP,
+  NText,
+  NIcon,
+} from "naive-ui";
+import { ArchiveOutline } from "@vicons/ionicons5";
 
 const props = defineProps({
   progress: {
@@ -38,27 +55,19 @@ const props = defineProps({
 
 const emit = defineEmits(["upload"]);
 
-const file = ref(null);
+const files = ref(null);
 
-const handleFileSelection = (files) => {
-  file.value = files[0];
-};
-
-const handleFilesDrop = (files) => {
-  console.log(files);
+const handleFilesChange = ({ fileList }) => {
+  files.value = fileList;
 };
 
 const handleUpload = () => {
-  if (!file.value) return;
-  emit("upload", file.value);
+  if (!files.value?.length) return;
+  emit("upload", files.value[0].file);
 };
 </script>
 <style scoped>
 .modal-container {
-  width: min(95%, 800px);
-  background-color: #fff;
-  border: 3px solid #000;
-  padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;

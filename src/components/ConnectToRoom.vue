@@ -1,27 +1,28 @@
 <template>
-  <div class="connect-container">
-    <CoolInput
-      type="text"
-      :value="username"
-      placeholder="ExampleUsername"
-      label="Username"
-      @input="(e) => (username = e)"
-    />
-    <CoolInput
-      type="text"
-      :value="roomId"
-      placeholder="xxxxx-xxxxx-xxxx"
-      label="Room Id"
-      @input="(e) => (roomId = e)"
-    />
-    <CoolButton text="Connect" @click="handleConnect" />
-  </div>
+  <NForm>
+    <NFormItem label="Username">
+      <NInput
+        v-model:value="form.username"
+        placeholder="ExampleUsername"
+        :disabled="isLoading"
+      />
+    </NFormItem>
+    <NFormItem label="Room Id">
+      <NInput
+        v-model:value="form.roomId"
+        placeholder="xxxxx-xxxxx-xxxx"
+        :disabled="isLoading"
+      />
+    </NFormItem>
+    <div class="flex justify-center">
+      <NButton type="primary" @click="handleConnect">Connect</NButton>
+    </div>
+  </NForm>
 </template>
 <script setup>
-import { ref } from "vue";
+import { reactive } from "vue";
 
-import CoolInput from "./CoolInput.vue";
-import CoolButton from "./CoolButton.vue";
+import { NButton, NForm, NFormItem, NInput } from "naive-ui";
 
 const props = defineProps({
   initialRoomId: {
@@ -36,19 +37,14 @@ const props = defineProps({
 
 const emit = defineEmits(["connect"]);
 
-const username = ref("");
-const roomId = ref(props.initialRoomId);
-console.log(roomId.value, props.initialRoomId);
+const form = reactive({
+  username: "",
+  roomId: props.initialRoomId,
+});
 
 const handleConnect = () => {
-  emit("connect", { username: username.value, roomId: roomId.value });
+  emit("connect", form);
 };
 </script>
 <style scoped>
-.connect-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-}
 </style>
