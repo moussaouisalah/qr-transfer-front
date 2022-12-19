@@ -32,9 +32,6 @@ import {
   NText,
 } from "naive-ui";
 
-import Container from "./Container.vue";
-import UserContainer from "./UserContainer.vue";
-
 const props = defineProps({
   users: {
     type: Array,
