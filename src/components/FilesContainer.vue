@@ -39,14 +39,9 @@ import {
   NTag,
   NThing,
 } from "naive-ui";
+import useRoom from "../composables/useRoom";
 
-const props = defineProps({
-  files: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-});
+const { files } = useRoom();
 
 const emit = defineEmits(["showUploadModal"]);
 

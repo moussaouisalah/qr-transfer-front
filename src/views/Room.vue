@@ -19,7 +19,7 @@
     <div class="room-container">
       <ConnectModal
         v-if="!isConnected"
-        :initialRoomId="roomId"
+        :initialRoomId="route.params?.id || ''"
         :isLoading="loading.connect"
         :errors="{ username: errors.username, room: errors.room }"
         @newRoom="handleNewRoom"
@@ -28,25 +28,13 @@
       />
       <div v-else class="inside-room-container">
         <div v-if="!isMobile" class="room-info-container">
-          <RoomInfoContainer
-            :roomId="roomId"
-            :username="username"
-            :roomUsersNumber="users.length"
-            @share="handleShared"
-          />
+          <RoomInfoContainer @share="handleShared" />
         </div>
         <div class="users-container">
-          <UsersListContainer
-            :users="users"
-            :currentUser="username"
-            @disconnect="handleDisconnect"
-          />
+          <UsersListContainer @disconnect="handleDisconnect" />
         </div>
         <div class="files-container">
-          <FilesContainer
-            :files="files"
-            @showUploadModal="handleToggleUploadModal"
-          />
+          <FilesContainer @showUploadModal="handleToggleUploadModal" />
         </div>
         <NModal v-model:show="isUploadModalOpen">
           <UploadFileModal
@@ -60,9 +48,6 @@
         </NModal>
         <NModal v-model:show="isRoomInfoModalOpen">
           <RoomInfoContainer
-            :roomId="roomId"
-            :username="username"
-            :roomUsersNumber="users.length"
             @share="handleShared"
             style="width: min(95%, 800px)"
           />
@@ -72,15 +57,14 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { io } from "socket.io-client";
 import axios from "axios";
 import { useLoadingBar, useNotification, NModal, NButton } from "naive-ui";
 
 import useWindowWidth from "../composables/useWindowWidth";
-import { getServerUrl, getServerDomain } from "../utils";
-import { socketEvents } from "../constants";
+import useRoom from "../composables/useRoom";
+import { getServerUrl } from "../utils";
 
 import ConnectModal from "../components/ConnectModal.vue";
 import RoomInfoContainer from "../components/RoomInfoContainer.vue";
@@ -92,12 +76,7 @@ import Header from "../components/Header.vue";
 const route = useRoute();
 const router = useRouter();
 
-console.log(route.params.id);
-
-const roomId = ref(route.params.id ?? "");
-const username = ref("");
-const isConnected = ref(false);
-const socket = ref(null);
+const { isConnected, connect, disconnect, roomId, uploadToken } = useRoom();
 
 const errors = reactive({
   username: "",
@@ -113,114 +92,22 @@ const { isMobile } = useWindowWidth();
 const notification = useNotification();
 const loadingBar = useLoadingBar();
 
-const files = ref([]);
-const users = ref([]);
-const uploadToken = ref("");
-
 const uploadProgress = ref(0);
 const isUploadModalOpen = ref(false);
 const isRoomInfoModalOpen = ref(false);
+
+watch(isConnected, (newValue) => {
+  if (newValue) {
+    loading.connect = false;
+    loadingBar.finish();
+  }
+});
 
 const handleOpenRoomInfoModal = () => {
   isRoomInfoModalOpen.value = true;
 };
 
-const clearData = () => {
-  roomId.value = null;
-  username.value = "";
-  files.value = [];
-  users.value = [];
-  uploadToken.value = "";
-};
-
-const registerSocketListeners = () => {
-  if (!socket.value) return;
-  socket.value.on(socketEvents.CONNECT, () => {
-    isConnected.value = true;
-    loading.connect = false;
-    loadingBar.finish();
-    console.log("connected");
-    notification.success({
-      content: `connected to room`,
-      duration: 3000,
-    });
-    router.replace({ name: route.name, params: { id: roomId.value } });
-  });
-
-  socket.value.on(socketEvents.DISCONNECT, () => {
-    console.log("disconnected by server");
-    notification.error({
-      content: "Disconnected from server",
-      duration: 3000,
-    });
-    if (socket.value) {
-      socket.value.disconnect();
-      socket.value = null;
-    }
-    isConnected.value = false;
-    clearData();
-    router.replace({ path: "/" });
-  });
-
-  const MAX_CONNECT_TRIES = 3;
-  let connectErrorsCount = 0;
-  socket.value.on(socketEvents.CONNECT_ERROR, (err) => {
-    console.log("connect_error", err);
-    connectErrorsCount++;
-    if (connectErrorsCount >= MAX_CONNECT_TRIES) {
-      notification.error({
-        content: "Could not connect to server",
-        duration: 3000,
-      });
-      if (socket.value) {
-        socket.value.disconnect();
-        socket.value = null;
-      }
-      isConnected.value = false;
-      loading.connect = false;
-      loadingBar.error();
-      clearData();
-      router.replace({ path: "/" });
-    }
-  });
-
-  socket.value.on(socketEvents.ROOM_DATA, (data) => {
-    console.log("room-data", data);
-    users.value = data.users;
-    files.value = data.files;
-    roomId.value = data.id;
-    uploadToken.value = data.uploadToken;
-  });
-
-  socket.value.on(socketEvents.NEW_USER, (user) => {
-    console.log("new-user", user);
-    users.value = [...users.value, user];
-  });
-
-  socket.value.on(socketEvents.USER_DISCONNECTED, (user) => {
-    console.log("user-disconnected", user);
-    users.value = users.value.filter((u) => u !== user);
-  });
-
-  socket.value.on(socketEvents.FILE_UPLOAD, (file) => {
-    console.log("file-upload", file);
-    files.value = [...files.value, file];
-  });
-
-  socket.value.on(socketEvents.USERNAME_TAKEN, () => {
-    console.log("username taken");
-    if (socket.value) {
-      socket.value.disconnect();
-      socket.value = null;
-    }
-    isConnected.value = false;
-    clearData();
-    errors.username = "Username already taken";
-  });
-};
-
-const handleConnect = ({ room, user }) => {
-  console.log("handleConnect", room, user);
+const handleConnect = async ({ room, user }) => {
   if (!user) {
     errors.username = "Username is required";
     return;
@@ -229,51 +116,83 @@ const handleConnect = ({ room, user }) => {
     errors.room = "Room is required";
     return;
   }
-  console.log("connect", room, user);
   errors.username = "";
   errors.room = "";
-  username.value = user;
   loading.connect = true;
   loadingBar.start();
-  socket.value = io(getServerDomain(), {
-    query: {
-      roomId: room,
-      username: user,
-    },
-  });
-  registerSocketListeners();
+  try {
+    const response = await axios
+      .post(getServerUrl() + "/rooms/join", {
+        roomId: room,
+        username: user,
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message || "An unknown error occured"
+        );
+      });
+    console.log(response);
+    if (!response.status === 200 || !response.data.connectionCode) {
+      throw new Error("An unknown error occured");
+    }
+    const connectionCode = response.data.connectionCode;
+    const roomId = response.data.roomId;
+    connect({ connectionCode, roomId });
+  } catch (err) {
+    console.log(err);
+    notification.error({
+      content: "Could not join room! " + err.message,
+      duration: 3000,
+    });
+    loading.connect = false;
+    loadingBar.error();
+    return;
+  }
 };
 
-const handleNewRoom = ({ user }) => {
+const handleNewRoom = async ({ user }) => {
   if (!user) {
     errors.username = "Username is required";
     return;
   }
   errors.username = "";
   errors.room = "";
-  username.value = user;
   loading.connect = true;
   loadingBar.start();
-  socket.value = io(getServerDomain(), {
-    query: {
-      username: user,
-    },
-  });
   notification.info({
     content: "Creating new room... This might take a while",
     duration: 3000,
   });
-  registerSocketListeners();
+  try {
+    const response = await axios
+      .post(getServerUrl() + "/rooms/new", {
+        username: user,
+      })
+      .catch((err) => {
+        throw new Error(
+          err?.response?.data?.message || "An unknown error occured"
+        );
+      });
+    if (!response.status === 200 || !response.data.connectionCode) {
+      throw new Error("An unknown error occured");
+    }
+    const connectionCode = response.data.connectionCode;
+    const roomId = response.data.roomId;
+    connect({ connectionCode, roomId });
+  } catch (err) {
+    console.log(err);
+    notification.error({
+      content: "Could not create room!, " + err.message,
+      duration: 3000,
+    });
+    loading.connect = false;
+    loadingBar.error();
+    return;
+  }
 };
 
 const handleDisconnect = () => {
-  if (socket.value) {
-    socket.value.disconnect();
-    socket.value = null;
-  }
-  isConnected.value = false;
-  clearData();
-  router.replace({ path: "/" });
+  disconnect();
 };
 
 const handleUploadFile = (file) => {

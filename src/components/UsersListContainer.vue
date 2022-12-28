@@ -31,25 +31,14 @@ import {
   NButton,
   NText,
 } from "naive-ui";
+import useRoom from "../composables/useRoom";
 
-const props = defineProps({
-  users: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-  currentUser: {
-    type: String,
-    required: true,
-    default: "",
-  },
-});
+const { users, username } = useRoom();
 
-const isCurrentUser = (user) => user === props.currentUser;
+console.log("users", users);
+console.log("username", username);
 
-const otherUsers = computed(() =>
-  props.users.filter((user) => !isCurrentUser(user))
-);
+const isCurrentUser = (user) => user === username.value;
 </script>
 <style scoped>
 .current-user-container {

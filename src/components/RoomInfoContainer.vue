@@ -4,7 +4,7 @@
       <canvas ref="qrcodeCanvas"></canvas>
     </div>
     <div class="room-info-text-container">
-      <NInput :value="`${roomUsersNumber} Users`" label="Users" isReadOnly />
+      <NInput :value="`${users?.length || 0} Users`" label="Users" isReadOnly />
       <NInput :value="roomUrl" label="Room" isReadOnly />
       <NButton secondary type="primary" @click="handleShare">Copy Link</NButton>
     </div>
@@ -14,34 +14,21 @@
 import { ref, computed, watchEffect } from "vue";
 import QRCode from "qrcode";
 import { NButton, NCard, NInput } from "naive-ui";
+import useRoom from "../composables/useRoom";
 
-const props = defineProps({
-  roomId: {
-    type: String,
-    required: true,
-  },
-  username: {
-    type: String,
-    required: true,
-  },
-  roomUsersNumber: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-});
+const { roomId, users } = useRoom();
 
 const emit = defineEmits(["share"]);
 
 const qrcodeCanvas = ref(null);
 
 const roomUrl = computed(() => {
-  return `${window.location.origin}/${props.roomId}`;
+  return `${window.location.origin}/${roomId.value}`;
 });
 
 watchEffect(() => {
-  if (!qrcodeCanvas.value || !props.roomId) return;
-  const url = `${window.location.origin}/${props.roomId}`;
+  if (!qrcodeCanvas.value || !roomId.value) return;
+  const url = `${window.location.origin}/${roomId.value}`;
   QRCode.toCanvas(qrcodeCanvas.value, url, (error) => {
     if (error) console.error(error);
   });
