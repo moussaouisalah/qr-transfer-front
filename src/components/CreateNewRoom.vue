@@ -8,7 +8,11 @@
       />
     </NFormItem>
     <div class="flex justify-center">
-      <NButton type="primary" :loading="isLoading" @click="handleCreate"
+      <NButton
+        type="primary"
+        :loading="isLoading"
+        @click="handleCreate"
+        :disabled="isLoading || !form.username"
         >Create</NButton
       >
     </div>

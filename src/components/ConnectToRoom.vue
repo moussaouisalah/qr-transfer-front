@@ -15,7 +15,12 @@
       />
     </NFormItem>
     <div class="flex justify-center">
-      <NButton type="primary" @click="handleConnect">Connect</NButton>
+      <NButton
+        type="primary"
+        @click="handleConnect"
+        :disabled="isLoading || !form.username || !form.roomId"
+        >Connect</NButton
+      >
     </div>
   </NForm>
 </template>

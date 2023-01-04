@@ -1,5 +1,9 @@
 <template>
   <NCard title="Welcome to Qranfer!" class="connect-modal-container">
+    <p style="margin-bottom: 12px; color: #aaa">
+      Start by creating a new room by entering a username. Or Join an existing
+      room by choosing a username and entering the room id
+    </p>
     <NTabs
       type="line"
       animated

@@ -20,7 +20,12 @@
           </NP>
         </NUploadDragger>
       </NUpload>
-      <NButton type="primary" @click="handleUpload">Upload</NButton>
+      <NButton
+        type="primary"
+        @click="handleUpload"
+        :disabled="!files || files.length === 0"
+        >Upload</NButton
+      >
     </div>
   </NCard>
 </template>
@@ -58,12 +63,15 @@ const emit = defineEmits(["upload"]);
 const files = ref(null);
 
 const handleFilesChange = ({ fileList }) => {
+  console.log("files", fileList);
+  if (!fileList.length) return;
   files.value = fileList;
 };
 
 const handleUpload = () => {
+  console.log("upload", files);
   if (!files.value?.length) return;
-  emit("upload", files.value[0].file);
+  emit("upload", files.value);
 };
 </script>
 <style scoped>

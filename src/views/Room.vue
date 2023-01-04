@@ -41,7 +41,7 @@
             :progress="uploadProgress"
             :isLoading="loading.upload"
             :errors="{ file: errors.upload }"
-            @upload="handleUploadFile"
+            @upload="handleUploadFiles"
             @close="isUploadModalOpen = false"
             style="width: min(95%, 800px)"
           />
@@ -195,47 +195,51 @@ const handleDisconnect = () => {
   disconnect();
 };
 
-const handleUploadFile = (file) => {
-  if (!file) {
+const handleUploadFiles = async (files) => {
+  console.log("uplaoding", files, files.value);
+  if (!files?.length) {
     errors.upload = "File is required";
     return;
   }
   errors.upload = "";
   loading.upload = true;
   loadingBar.start();
-  const formData = new FormData();
-  formData.append("file", file);
-  axios
-    .post(
-      `${getServerUrl()}/upload/${roomId.value}?token=${uploadToken.value}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const uploadPercentage = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          console.log("Upload Progress: " + uploadPercentage + "%");
-          uploadProgress.value = uploadPercentage;
-        },
-      }
-    )
-    .then((res) => {
-      console.log(res);
-      isUploadModalOpen.value = false;
-    })
-    .catch((err) => {
-      console.log(err);
-      loadingBar.error();
-      errors.upload = "Error uploading file" + JSON.stringify(err);
-    })
-    .finally(() => {
-      loading.upload = false;
-      loadingBar.finish();
-      uploadProgress.value = 0;
-    });
+  const totalSize = files.reduce(
+    (acc, fileWrapper) => acc + fileWrapper.file.size,
+    0
+  );
+  console.log("totalSize", totalSize);
+  try {
+    for (let fileWrapper of files) {
+      const formData = new FormData();
+      formData.append("file", fileWrapper.file);
+      await axios.post(
+        `${getServerUrl()}/upload/${roomId.value}?token=${uploadToken.value}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            const uploadPercentage = Math.round(
+              (progressEvent.loaded * 100) / totalSize
+            );
+            console.log("Upload Progress: " + uploadPercentage + "%");
+            uploadProgress.value = uploadPercentage;
+          },
+        }
+      );
+    }
+    isUploadModalOpen.value = false;
+  } catch (err) {
+    console.log(err);
+    loadingBar.error();
+    errors.upload = "Error uploading file" + JSON.stringify(err);
+  } finally {
+    loading.upload = false;
+    loadingBar.finish();
+    uploadProgress.value = 0;
+  }
 };
 
 const handleToggleUploadModal = () => {
